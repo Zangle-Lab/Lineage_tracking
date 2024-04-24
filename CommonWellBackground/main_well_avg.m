@@ -34,18 +34,22 @@ for ii = 1:numf
 
     [yshift, xshift] = CorrShift1(C2, Cmi2);
 
-    ys(ii) = yshift;
-    xs(ii) = xshift;
+    filename2 = sprintf ('QPM40X_%d_frame_1.tif',ii);
+    Ri = imread ([fdir filename2]);
 
     T = maketform('affine', [1 0 0; 0 1 0; (-xshift) (-yshift) 1]);
+    T2 = maketform('affine', [1 0 0; 0 1 0; (-xshift) (-yshift) 1]);
 
     Fi = imtransform(Bi, T, 'XData',[1 size(Bi,2)], 'YData',[1 size(Bi,1)]);
+    Hi = imtransform(Ri, T2, 'XData',[1 size(Ri,2)], 'YData',[1 size(Ri,1)]);
 
     sum = imadd(sum,Fi);
+    sum2 = imadd(sum2,Hi./numf);
 end
 
 Abkg = imdivide(sum,sumM);
 filename = 'avg_well1';
 save_fdir=[fdir, 'avg_well\'];
 save([save_fdir filename],'Phase','Abkg')
-    
+
+imwrite(sum2,'G:\Data\Jingzhou\70Z3_microwells_imaging\110519_run1\avg_well\avg_well1.tif')
