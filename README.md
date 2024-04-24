@@ -2,7 +2,7 @@
 Code for QPI-based lineage tracking
 
 Major steps executed in this workflow:
-1) Compute background of wells
+1) Compute background of wells (CommonWellBackground/main_well_avg.m)
 2) Split images into subimages
 3) Perform cell tracking
 4) Perform track reconnection
