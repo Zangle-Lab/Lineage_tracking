@@ -35,12 +35,12 @@ minpathlength = 10; %min path length to use in plotting results. only paths
 %                    minpathlength will still be computed and stored)
 
 
-massfact = 0.35; %factor to multiply mass by in tracking step. use this to  
+massfact = 0.35; %factor to multiply mass by in tracking step. use this to
 %account for differences in how much the cell moves vs. how
 %much mass changes over time
 
 %%% tracking parameters below affect the tracking software itself
-max_disp = 6;  %max displacement for particle tracking 
+max_disp = 6;  %max displacement for particle tracking
 %               max_disp is an estimate of the maximum distance that a
 %               particle would move in a single time interval. It should be
 %               set to a value somewhat less than the mean spacing between
@@ -79,62 +79,62 @@ for Loc = 1:numLoc
         fileNames = char(sort_nat({filelist.name}'));
         numf = length(fileNames(:,1));
         numf = min([length(fileNames(:,1)), num_frame]);
-        
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% grab first frame for analysis and detection of the correct cell
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         fname = strtrim([froot, fileNames(1,:)]);
-        
+
         [D1,L1] = LoadSegment(fname, wavelength);
         D1s = zeros([size(D1),numLoc], 'single');
-        
-        
+
+
         %preallocate variables for speed
         yshift_store = zeros(numf);
         xshift_store = zeros(numf);
         t_stored = zeros(numf);
-        
+
         D_stored = zeros([size(D1),numf], 'single');
         L_stored = zeros([size(D1),numf], 'uint16');
-        
-        
+
+
         D1s(:,:,Loc) = single(D1);
-        
+
         %%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% loop through first numf file names stored in fnum and store analysis results
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
         tt = 1; %initialize tt, the index of the tracking array
         T_array = [];
-        
+
         xshift_old = 0;
         yshift_old = 0;
         D_old = D1;
-        
+
         for jj = 1:numf
-            
+
             fname = strtrim([froot, fileNames(jj,:)]);
             disp(fname)
-            
+
             [D, L] = LoadSegment(fname, wavelength);
-            
+
             [V, M, A, MI, P, SF] = imageprops_SF(L, D, pxlsize); %compute image properties based on the regions stored in L
             if std(D(:))~=0 %skip if blank image
-               
+
                 xshift = 0;
                 yshift = 0;
 
                 D_old = D;
                 xshift_old = xshift;
                 yshift_old = yshift;
-                
+
                 yshift_store(jj,Loc) = yshift;
                 xshift_store(jj,Loc) = xshift;
                 D_stored(:,:,jj) = single(D(:,:));
                 L_stored(:,:,jj) = uint16(L(:,:));
                 t_stored(jj,Loc) = time(jj);
-                
+
                 %next, loop through all items identified in V and find only the ones
                 %which meet area and mean intensity requirements
                 for ii = 1:length(V)
@@ -151,7 +151,7 @@ for Loc = 1:numLoc
                 end
             end
         end
-        
+
         if ~isempty(T_array) && sum(T_array(:,4) ~= T_array(1,4))>0
             %%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -166,14 +166,14 @@ for Loc = 1:numLoc
             T_array(:,2) = T_array(:,2) -minTy +1; %make sure all y positions are positive, new with rev6
             %move time to last column, T_array will now be [x, y, m, A, SF, t]
             T_array_temp = [T_array(:,1:3), T_array(:,5:6), T_array(:,4)];
-            
+
             tracks = track(T_array_temp,max_disp,param);
-            
+
             %move area back to 5th column, T_array will now be [x, y, m, t, A, SF] and
             %tracks will now be [x, y, m, t, cellnum, A, SF]
             tracks_temp = [tracks(:,1:3), tracks(:,6:7), tracks(:,4:5)];
             tracks = tracks_temp;
-            
+
             T_array(:,3) = T_array(:,3)./massfact; %adjust mass weighting back to the way it was
             T_array(:,1) = T_array(:,1) + minTx -1; %set all x positions back to the way they were
             T_array(:,1) = T_array(:,2) + minTy -1; %set all y positions back to the way they were
@@ -183,18 +183,18 @@ for Loc = 1:numLoc
         else
             tracks = [];
         end
-        
+
         %save D_stored and L_stored in a separate .mat file to save memory
         parsave([savefolder 'data', num2str(Loc), '.mat'], D_stored, 'D_stored', 0)
         parsave([savefolder 'data', num2str(Loc), '.mat'], L_stored, 'L_stored', 1)
-        
+
         %save tracks data
         parsave([savefolder 'Tdata', num2str(Loc), '.mat'], tracks, 'tracks', 0)
         parsave([savefolder 'Tdata', num2str(Loc), '.mat'], T_array, 'T_array', 1)
         parsave([savefolder 'Tdata', num2str(Loc), '.mat'], xshift_store, 'xshift_store', 1)
         parsave([savefolder 'Tdata', num2str(Loc), '.mat'], yshift_store, 'yshift_store', 1)
         parsave([savefolder 'Tdata', num2str(Loc), '.mat'], t_stored, 't_stored', 1)
-        
+
     end %close if statement looking for stored data
 end %close rows for loop
 
@@ -210,25 +210,25 @@ ii_stored = [];
 maxindex = 0;
 Loc_stored_c = [];
 for Loc = 1:numLoc
-    
+
     load([savefolder 'Tdata', num2str(Loc), '.mat']);
     if ~isempty(tracks)
         tracks(:,5) = tracks(:,5)+maxindex;
     end
-    
+
     tracks_comp = [tracks_comp; tracks];
     xshift_store_c = [xshift_store_c; xshift_store(:,Loc)];
     yshift_store_c = [yshift_store_c; yshift_store(:,Loc)];
     t_stored_c = [t_stored_c; t_stored(:,Loc)];
     ii_stored = [ii_stored, 1:length(t_stored(:,Loc))'];
     Loc_stored_c = [Loc_stored_c, (1:length(t_stored(:,Loc))').*0 + Loc];
-    
+
     if ~isempty(tracks_comp)
         maxindex = max(tracks_comp(:,5));
     end
-    
+
     clear tracks xshift_store yshift_store t_stored
-    
+
 end
 
 Loc_stored = Loc_stored_c;
@@ -244,7 +244,7 @@ tracks(:,4) = (tracks(:,4)-T0);
 t_stored = t_stored - T0;
 
 %%
-figure 
+figure
 [num, indices] = track_numpart(tracks,minpathlength); %find tracks >= minpathlength
 
 %plot tracks of mass over time
@@ -255,7 +255,7 @@ for ii = 1:num
     hold on
 
 end
-hold off 
+hold off
 
 ylabel('Mass (pg)', 'FontSize', 14)
 xlabel('time (h)', 'FontSize', 14)
@@ -269,7 +269,7 @@ saveas(gcf,file)
 
 %%
 %save data
-if ~exist([savefolder 'data_allframes']) || overwrite
-    save([savefolder 'data_allframes'])
+datafilename = sprintf('Loc_%d_well_%d_data_allframes.mat',oo,kk)
+if ~exist([savefolder datafilename]) || overwrite
+    save([savefolder datafilename])
 end
-
