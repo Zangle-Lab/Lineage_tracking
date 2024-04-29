@@ -13,12 +13,17 @@ for mm  = 1:num_loc
     t = 0; % start time, hr
     filename1 = sprintf ('QPM20X_%d_frame_1.tif',mm);
     fname_1 = strtrim([fdir filename1]);
-    time_0 = LoadTime(fname_1);
-    for nn = 1:num_frame
-        filename2 = sprintf ('QPM20X_%d_frame_%d.tif',mm,nn); % load the tiff images
-        fname_2 = strtrim([fdir filename2]);
-        timen = LoadTime(fname_2);
-        time(nn) = (datenum(timen)-datenum(time_0)).*24; %store time in hours
+    if exist(fname_1) %if TIF files are present, use them to directly read imaging times
+      time_0 = LoadTime(fname_1);
+      for nn = 1:num_frame
+          filename2 = sprintf ('QPM20X_%d_frame_%d.tif',mm,nn); % load the tiff images
+          fname_2 = strtrim([fdir filename2]);
+          timen = LoadTime(fname_2);
+          time(nn) = (datenum(timen)-datenum(time_0)).*24; %store time in hours
+      end
+    else
+      dt = 2.5/60; %time between frames
+      time = (0:numloc).*dt;
     end
 end
 %% Big loop starts to loop over all locations and wells
@@ -29,7 +34,7 @@ for oo = 1:num_loc
     well_file = eval(sprintf ('L_%d',oo));
     num_well = length(well_file);
 
-    for o = 1:num_well 
+    for o = 1:num_well
 
         kk = well_file(o);
 
