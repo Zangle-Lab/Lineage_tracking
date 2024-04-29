@@ -1,8 +1,8 @@
 clc; clear;close all;
 
 %% Ths section is for number of space and time units.
-num_loc = 1; %number of locations
-num_frame = 678;%2881;%1100;%2881; %number of frames
+num_loc = 19; %number of locations
+num_frame = 2881; %number of frames
 
 fdir = 'XX'; %define main directory with files
 
