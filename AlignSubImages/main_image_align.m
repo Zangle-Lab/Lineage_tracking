@@ -1,8 +1,8 @@
 clc;clear;close all;
 
 fdir = 'G:\Data\Jingzhou\slpeen_imaging\020720_run1\';
-numw = 15; % number of wells
-numf = 2148; % number of frames in each well
+numw = 10; % number of wells
+numf = 100; %2281; % number of frames in each well, example code just runs 100 frames
 load([fdir, 'avg_well\avg_well1.mat']);
 R0 = Abkg;
 
@@ -13,11 +13,11 @@ R1cc = 1000;
 R1(1:10,:)=R1cc;
 R1(2046:2056,:)=R1cc;
 R1(:,1:10)=R1cc;
-R1(:,2046:2056)=R1cc; 
+R1(:,2046:2056)=R1cc;
 
 C2 = imfilter_alignment(R1,0.015);
 
-for ii = 1:numw
+for ii = numw %1:numw %example code just runs one location
     xft = zeros(1,numf);
     yft = zeros(1,numf);
     f = zeros(1,numf);
